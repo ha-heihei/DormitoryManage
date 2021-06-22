@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../res/layui/css/layui.css"/>
+    <script src="../../../res/js/jquery.js"></script>
+    <script src="../../../res/js/cookie.js"></script>
+    <script src="../../../res/js/echarts.js"></script>
+    <link rel="stylesheet" href="../../../res/layuiadmin/style/admin.css" media="all">
+    <style type="text/css">
+        .layui-col-space15 {
+            margin: -7.5px;
+        }
+        .layui-col-space15>* {
+            padding: 7.5px;
+        }
+        .toptitle{
+            padding: 26px 10px 12px;
+        }
+        .title{
+            font-size: 24px;
+            line-height: 32px;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            color: #1ea0fa;
+        }
+        .label{
+            position: relative;
+            font-size: 16px !important;
+            font-weight: bold;
+            padding: 0 0 8px 0 !important;
+            display: block;
+            word-wrap: break-word;
+        }
+        .req{
+            position: absolute;
+            top: 0;
+            left: -12px;
+            color: red !important;
+            margin: 2px 0 0 2px;
+        }
+        fieldset {
+            border: none;
+            display: block;
+            margin-inline-start: 2px;
+            margin-inline-end: 2px;
+            padding-block-start: 0.35em;
+            padding-inline-start: 0.75em;
+            padding-inline-end: 0.75em;
+            padding-block-end: 0.625em;
+            min-inline-size: min-content;
+            border-image: initial;
+            margin: 0 80px;
+        }
+</style>
+</head>
+<body>
+
+<form style="margin: 12px auto !important;background: #fff;max-width: 800px;" class="layui-form layui-form-pane" onsubmit="return false">
+    <div class="toptitle">
+        <h1 class="title">信息学院晨午检日报表</h1>
+    </div>
+    <fieldset>
+        <div class="layui-form-item">
+            <label class="layui-form-label">班级</label>
+            <div class="layui-input-block">
+                <input type="text" name="cla" autocomplete="off"  class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">学号</label>
+            <div class="layui-input-block">
+                <input type="text" name="stunumber" autocomplete="off"  class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">姓名</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" autocomplete="off"  class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">性别</label>
+            <div class="layui-input-block" pane>
+                <input type="radio" name="sex" value="男" title="男" checked="">
+                <input type="radio" name="sex" value="女" title="女">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">早晨温度</label>
+            <div class="layui-input-block">
+                <input type="text" name="zao_wen" autocomplete="off"  class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">中午温度</label>
+            <div class="layui-input-block">
+                <input type="text" name="zhong_wen" autocomplete="off"  class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">填报时间</label>
+            <div class="layui-input-block">
+                <input type="text" name="date" autocomplete="off" id="date" class="layui-input">
+            </div>
+        </div>
+        <button type="button" id="submit" class="layui-btn layui-btn-fluid layui-btn-normal" style="display: block;margin-bottom: 12px">提交</button>
+    </fieldset>
+</form>
+<div style="text-align: center">Copyright ©2020-2021 版权所有</div>
+</body>
+<script src="../../../res/layui/layui.all.js"></script>
+<script>
+    $(function () {
+        $('#date').val(getNowFormatDate());
+        //日期
+        layui.laydate.render({
+            elem: '#date'
+        });
+
+        $('#submit').click(function () {
+            $.post(
+                '/insertQN'
+                ,$('form').serialize()
+                ,function (o) {
+                    o=JSON.parse(o);
+                    if(o.code===1){
+                        layer.msg("添加失败");
+                    }else if(o.code===0){
+                        layer.msg("添加成功");
+                        setTimeout(function () {
+                            location.reload();
+                        },800);
+                    }
+                }
+            )
+        })
+    });
+    function getNowFormatDate() {
+        var date = new Date();
+        var seperator1 = "-";
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var strDate = date.getDate();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        }
+        if (strDate >= 0 && strDate <= 9) {
+            strDate = "0" + strDate;
+        }
+        var currentdate = year + seperator1 + month + seperator1 + strDate;
+        return currentdate;
+    }
+</script>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../res/layui/css/layui.css"/>
+    <script src="../../../res/js/jquery.js"></script>
+    <script src="../../../res/js/cookie.js"></script>
+    <link rel="stylesheet" href="../../../res/layuiadmin/style/admin.css" media="all">
+</head>
+<body>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form onsubmit="return false" class="layui-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">姓名查询</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="name" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">学号查询</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="stunumber" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">导员查询</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="instructor" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <button class="layui-btn" id="query">查询</button>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <table class="layui-table" lay-size="sm">
+            <thead>
+            <tr>
+                <td>序号</td>
+                <td>学号</td>
+                <td>姓名</td>
+                <td>班级</td>
+                <td>宿舍号</td>
+                <td>辅导员</td>
+                <td>备注</td>
+                <td>操作</td>
+            </tr>
+            </thead>
+            <tbody id="body"></tbody>
+        </table>
+        <div style="margin: 8px auto;text-align: center">
+            <div id="page" style="background: #fff"></div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../../../res/layui/layui.all.js"></script>
+<script type="text/javascript">
+    $(function () {
+
+        $.post(
+            '/getStudentPageList'
+            , {"start": 0, "end": 1}
+            , function (o) {
+                layui.laypage.render({
+                    elem: 'page'
+                    , count: JSON.parse(o).num
+                    , layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                    , jump: function (obj) {
+                        getStudentList(obj.curr, obj.limit)
+                    }
+                });
+            }
+        );
+
+
+        $('#query').click(function () {
+            $.post(
+                '/getStudentListByAll'
+                , $("form").serialize() + "&" + $.param({'start': 0}) + "&" + $.param({'end': 1})
+                , function (o) {
+                    layui.laypage.render({
+                        elem: 'page'
+                        , count: JSON.parse(o).num
+                        , layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                        , jump: function (obj) {
+                            getStudentListByAll(obj.curr, obj.limit)
+                        }
+                    });
+                }
+            )
+        })
+
+    });
+
+
+    function getStudentList(p, l) {
+        $.post(
+            '/getStudentPageList'
+            , {"start": (p - 1) * l, "end": l}
+            , function (o) {
+                showList(o, p, l)
+            }
+        )
+    }
+
+    function getStudentListByAll(p, l) {
+        $.post(
+            '/getStudentListByAll'
+            , $("form").serialize() + "&" + $.param({'start': (p - 1) * l}) + "&" + $.param({'end': l})
+            , function (o) {
+                showList(o, p, l)
+            }
+        )
+    }
+
+    function showList(o, p, l) {
+        $('#body').html("");
+        let json = JSON.parse(JSON.parse(o).data);
+        let size = json.length;
+        for (let i = 0; i < size; i++) {
+            $("#body").append("<tr></tr>")
+        }
+        $("#body tr").each(function (i) {
+            $(this).append("<td>" + ((p - 1) * l + i + 1) + "</td>");
+            $(this).append("<td>" + json[i].stunumber + "</td>");
+            $(this).append("<td>" + json[i].name + "</td>");
+            $(this).append("<td>" + json[i].class_name + "</td>");
+            $(this).append("<td>" + json[i].dormitory_id + "</td>");
+            $(this).append("<td>" + json[i].instructor_id + "</td>");
+            $(this).append("<td>" + json[i].remark + "</td>");
+            $(this).append("<td><button class='layui-btn layui-btn-sm layui-btn-warm edit'>" +
+                "<i class='layui-icon layui-icon-edit'/>编辑</button></td>");
+        });
+
+        $("#body button.edit").each(function (i) {
+            $(this).click(function () {
+                layui.layer.open({
+                    title: "修改宿舍号"
+                    , content: "<input type='text' class='layui-input' name='dormitoryId'/>"
+                    , btn: ["修改", "取消"]
+                    , btnAlign: 'c'
+                    , success: function (layero, index) {
+                        $('input[name=dormitoryId]').val(json[i].dormitory_id)
+                    }
+                    , yes: function (index, layero) {
+                        $.post(
+                            "/updateStudent"
+                            , {'id': $('input[name=dormitoryId]').val(), "stunumber": json[i].stunumber}
+                            , function (o) {
+                                o = JSON.parse(o);
+                                if (o.code === 0) {
+                                    layer.close(index);
+                                    getStudentListByAll(1,10);
+                                }else if(o.code===1){
+                                    layer.msg("修改失败")
+                                }
+                            }
+                        );
+                        return true;
+                    }
+                })
+            })
+        })
+    }
+</script>
+</html>

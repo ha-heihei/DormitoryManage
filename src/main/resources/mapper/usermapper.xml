@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lh.dao.UserMapper">
+
+    <resultMap id="map" type="map"/>
+
+<!--    用户登录-->
+    <select id="checkLogin" parameterType="map" resultType="com.lh.pojo.User">
+        select * from user where username=#{username} and password=#{password}
+    </select>
+
+<!--    获取用户信息-->
+    <select id="getUserInfo" parameterType="int" resultType="com.lh.pojo.User">
+        select * from user where id=#{id}
+    </select>
+    
+    <select id="getStuCardsList" resultMap="map" parameterType="map">
+        select * from user where status='1' limit #{start},#{end}
+    </select>
+
+    <select id="getStuCardsListSize" resultType="integer" parameterType="map">
+        select count(*) from user where status='1'
+    </select>
+
+    <select id="getStuCardsInfo" resultMap="map" parameterType="map">
+        select * from user where id=#{id}
+    </select>
+
+    <delete id="deleteStuCards" parameterType="map">
+        delete from user where id=#{id}
+    </delete>
+
+<!--    新增干部-->
+    <insert id="insertStuCards" parameterType="map" >
+        insert into user values(#{id},#{username},'123',#{name},#{phone},#{email},'1')
+    </insert>
+
+</mapper>

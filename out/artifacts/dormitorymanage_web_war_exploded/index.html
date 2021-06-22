@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>前台系统界面</title>
+    <link href="res/reception/css/style.css" rel=stylesheet>
+    <script language="JavaScript" type="text/javascript" src="res/reception/js/jquery.js"></script>
+    <script language="JavaScript" type="text/javascript" src="res/reception/js/jquery.jslides.js"></script>
+    <script src="res/reception/js/jqselect.js" type=text/javascript></SCRIPT>
+    <!-- Baidu Tongji BEGIN -->
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "http://hm.baidu.com/hm.js?324af8cdd661aaecedd5e22bffb6af7e";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+    <!-- Baidu Tongji END -->
+    <script>
+        $(function () {
+            $("#login_text").click(function () {
+                window.location.href='/toLoginPage';
+            });
+        });
+    </script>
+</head>
+<body>
+<div class="header">
+    <div class="main">
+        <a href=""><img src="res/reception/images/logo.png" width="440" height="110" class="png" style=" margin-bottom:5px" /></a>
+        <div class="tel">
+            <span id="login_text" style="cursor: pointer">登 录</span>
+        </div>
+    </div>
+</div>
+<div class="menu">
+    <ul>
+        <li class="cur"><a href="#">系统首页</a></li>
+        <li ><a href="#">系统简介</a></li>
+        <li ><a href="#">最新公告</a></li>
+        <li ><a href="#">宿舍展示</a></li>
+        <li ><a href="#">院系要求</a></li>
+        <li ><a href="#">下放通知</a></li>
+        <li ><a href="#">比赛通知</a></li>
+        <li ><a href="#">学生处</a></li>
+        <li ><a href="#">教务系统</a></li>
+        <li ><a href="contact.html">联系我们</a></li>
+    </ul>
+</div>
+<!--banner start-->
+<div class="banner">
+    <ul class="slides">
+        <li style="background:url(res/reception/images/1.png) 50% 0 no-repeat;"></li>
+        <li style="background:url(res/reception/images/2.png) 50% 0 no-repeat;"></li>
+        <li style="background:url(res/reception/images/3.png) 50% 0 no-repeat;"></li>
+    </ul>
+</div>
+<!-- js调用部分begin -->
+
+<script src="res/reception/js/jquery.flexslider-min.js"></script>
+<script>
+    $(function(){
+        $('.banner').flexslider({
+            directionNav: true,
+            pauseOnAction: false
+        });
+    });
+</script>
+<!-- js调用部分end -->
+<!--banner end-->
+<div class="notice">
+    <div class="main">
+        <div class="noticecon"><b>系统小标语：</b>
+            <marquee scrollamount="2" scrolldelay="5" onMouseOut="this.start()" onMouseOver="this.stop()">
+                每天都是干净整洁的一天
+            </marquee>
+        </div>
+        <div class="search">
+            <form id="search" name="search" method="get" action="">
+                <input type="text" class="text" name="kws" id="kws" placeholder="请输入搜索关键词"/>
+                <div class="select">
+                    <select id="rid" style="display: none" name="rid">
+                        <option value="1" selected="selected">优秀宿舍</option>
+                        <option value="2" >宿舍检查要求</option>
+                        <option value="3" >注意事项</option>
+                        <option value="4" >学生处</option>
+                    </select>
+                </div>
+                <input type="submit" class="button" value="搜索"/>
+            </form>
+            <script type=text/javascript>
+                jQuery(document).ready(function() {
+                    jQuery("#rid").selectbox();
+                });
+            </script>
+        </div>
+    </div>
+</div>
+<div class="clear"></div>
+<div class="row1">
+    <div class="news">
+        <div class="title">
+            <span><a href="#">查看更多 +</a></span>相关比赛
+        </div>
+        <ul>
+            <li>
+                <div class="time"><span>21</span>
+                    <p>2020-11</p>
+                </div>
+                <a href="" class="newsimg"><img src="res/reception/images/p9.jpg" width="78" height="58"/></a>
+                <div class="news_r"><a href="">宿舍文化大赛(本部)</a>
+                    <p>本部宿舍文化大赛正在火热进行中....</p>
+                </div>
+            </li>
+            <li>
+                <div class="time"><span>15</span>
+                    <p>2020-10</p>
+                </div>
+                <a href="" class="newsimg"><img src="res/reception/images/p10.jpg" width="78" height="58" /></a>
+                <div class="news_r"><a href="">宿舍文化大赛(龙山)</a>
+                    <p>龙山校区宿舍文化大赛最终获奖优秀名单展示</p>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="about">
+        <div class="title">
+            <span><a href="#">查看更多 +</a></span>系统简介
+        </div>
+        <div class="aboutmain">
+            该系统由云起动力团队制作，主要目的是为了将宿舍卫生检查同信息化相结合，实现宿舍信息一体化和统一管理，提高宿舍检查卫生效率，减少检查卫生中的人员负担。该系统将检查卫生角色划分为三种，分别为查宿人员，导员，学生处。三个用户互相协作，互不干扰，实现高效查宿。
+        </div>
+    </div>
+</div>
+<div class="product">
+    <div class="main">
+        <div class="title">
+            <span><a href="#">查看更多+</a></span>
+            <img src="res/reception/images/aboutma.jpg" width="200" height="105"/>
+            <div>宿舍展示</div>
+            <p> 宿舍展示，让干净整洁永驻宿舍!</p>
+        </div>
+        <ul class="pro">
+            <li class="he">
+                <a href=""><img src="res/reception/images/p1.jpg" width="250" height="193"/></a>
+                <span><a href="">优秀宿舍1</a></span>
+            </li>
+            <li class="he">
+                <a href=""><img src="res/reception/images/p2.jpg" width="250" height="193"/></a>
+                <span ><a href="">优秀宿舍2</a></span>
+            </li>
+            <li class="he">
+                <a href=""><img src="res/reception/images/p3.jpg" width="250" height="193"/></a>
+                <span ><a href="">优秀宿舍3</a></span>
+            </li>
+            <li>
+                <a href=""><img src="res/reception/images/p4.jpg" width="250" height="193"/></a>
+                <span ><a href="">优秀宿舍4</a></span>
+            </li>
+            <li class="he">
+                <a href=""><img src="res/reception/images/p5.jpg" width="250" height="193"/></a>
+                <span ><a href="">宿舍一角</a></span>
+            </li>
+            <li class="he">
+                <a href=""><img src="res/reception/images/p6.jpg" width="250" height="193" /></a>
+                <span ><a href="">宿舍一角</a></span>
+            </li>
+            <li class="he">
+                <a href=""><img src="res/reception/images/p7.jpg" width="250" height="193"/></a>
+                <span ><a href="">宿舍一角</a></span>
+            </li>
+            <li>
+                <a href="" ><img src="res/reception/images/p8.jpg" width="250" height="193" /></a>
+                <span ><a href="">宿舍一角</a></span>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="row3">
+    <div class="process">
+        <div class="title">
+            <span><a href="#">查看更多 +</a></span>最新公告
+        </div>
+        <ul class="list">
+            <li><a href=""><span>2020-11-14</span>优秀宿舍卫生评比落幕</a></li>
+            <li><span>2020-11-07</span><a href="">宿舍卫生检查注意事项</a></li>
+            <li><span>2020-10-25</span><a href="">各院宿舍卫生评比结果</a></li>
+            <li><span>2020-10-18</span><a href="">全校宿舍大检查宿舍要求</a></li>
+            <li><span>2020-10-11</span><a href="">新一届宿舍文化大赛开幕</a></li>
+        </ul>
+    </div>
+    <div class="contact">
+        <div class="title">
+            <span><a href="#">查看更多 +</a></span>联系我们
+        </div>
+        <div class="contactcon">
+            </br>
+            地址：石家庄铁道大学卫生处办<br/>
+            电话：+86-17531024866<br/>
+            邮箱：1595463587@stdu.com<br/>
+
+        </div>
+    </div>
+</div>
+<div class="f_link">
+    <div class="main"><b>友情链接:</b><a href="http://tiedao.vatuu.com/index.html">教务处</a>
+    </div>
+</div>
+<div class="foot_x">
+    <div class="main">
+        <div class="bottomnav">
+            <a href="#">系统首页</a>
+            <a href="#" >系统简介</a>
+            <a href="#">最新公告</a>
+            <a href="#">宿舍展示</a>
+            <a href="#">院系要求</a>
+            <a href="#">下放通知</a>
+            <a href="#">比赛通知</a>
+            <a href="#">学生处</a>
+            <a href="#">教务处</a>
+            <a href="#">联系我们</a>
+            <script type="text/javascript">
+                $(".bottomnav a:first").css("border",0);
+            </script>
+        </div>
+        <div class="bootTxt">
+            地址：石家庄铁道大学卫生处办   &nbsp; 电话：+86-17531024866   &nbsp;  传真：+86-1476528<br/>
+            版权所有：Copyright ©2020-2021 云起动力团队版权所有
+        </div>
+    </div>
+</div>
+</body>
+</html>

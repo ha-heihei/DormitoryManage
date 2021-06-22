@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../res/layui/css/layui.css"/>
+    <script src="../../../res/js/jquery.js"></script>
+    <script src="../../../res/js/cookie.js"></script>
+    <script src="../../../res/js/echarts.js"></script>
+    <link rel="stylesheet" href="../../../res/layuiadmin/style/admin.css" media="all">
+<!--    图片预览控件引入-->
+    <link rel="stylesheet" href="/res/css/preimg/index.css">
+    <script src="https://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+    <script src="https://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/res/js/preimg/index.js"></script>
+    <script src="/res/js/preimg/jquery.rotate.min.js"></script>
+    <style type="text/css">
+        .layui-col-space15 {
+            margin: -7.5px;
+        }
+        .layui-col-space15>* {
+            padding: 7.5px;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-fluid">
+
+    <div class="layui-row">
+        <div class="layui-col-md3">
+            <div class="layui-input-inline">
+                <input class="layui-input" name="date" id="date">
+            </div>
+            <button class="layui-btn layui-btn-normal" id="query">查询</button>
+        </div>
+        <div class="layui-col-md9">
+            <div class="layui-col-md12">
+                <fieldset class="layui-elem-field layui-field-title" style="margin-top: -8px;">
+                    <legend>查宿进度</legend>
+                </fieldset>
+                <div class="layui-progress " lay-showPercent="true" lay-filter="progress">
+                    <div class="layui-progress-bar layui-bg-blue"  id="progress" lay-percent="0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md4">
+            <div id="cla_charts" style="width: 100%;height: 250px;background: #fff"></div>
+        </div>
+        <div class="layui-col-md4">
+            <div id="cla_charts_line" style="width: 100%;height: 250px;background: #fff"></div>
+        </div>
+        <div class="layui-col-md4">
+            <div id="cla_charts_pie" style="width: 100%;height: 250px;background: #fff"></div>
+        </div>
+    </div>
+    <div class="layui-row layui-col-space15">
+        <div  style="background: #fff;border-radius: 6px">
+            <table class="layui-table" lay-size="sm" lay-skin="nob">
+                <thead>
+                <tr>
+                    <td>序号</td>
+                    <td>宿舍号</td>
+                    <td>查宿日期</td>
+                    <td>分数</td>
+                    <td>图片</td>
+                    <td>班级</td>
+                    <td>查宿人员</td>
+                    <td>备注</td>
+                </tr>
+                </thead>
+                <tbody id="body"></tbody>
+            </table>
+        </div>
+    </div>
+
+<!--    -->
+</div>
+</body>
+<script src="../../../res/layui/layui.all.js"></script>
+<script type="text/javascript">
+    var cla_charts=echarts.init(document.getElementById("cla_charts"));
+    var cla_charts_line=echarts.init(document.getElementById("cla_charts_line"));
+    var cla_charts_pie=echarts.init(document.getElementById("cla_charts_pie"));
+
+    $(function () {
+
+        layui.laydate.render({
+            elem:'#date'
+        });
+
+        getScoreListByCla();
+
+        getScoreChartsByCla();
+
+        setInterval(getProgress,1000);
+
+        $('#query').click(function () {
+            getScoreListByCla();
+
+            getScoreChartsByCla();
+
+        })
+
+    });
+
+    function getScoreChartsByCla() {
+        let option={
+            title: {
+
+            },
+            tooltip:{},
+            legend: {
+                data:['分数']
+            },
+            xAxis:{
+
+            },
+            yAxis:{},
+            series: [{
+                name: '分数',
+                type: "bar",
+                itemStyle: {
+                    normal: {
+                        //这里是重点
+                        color: function(params) {
+                            //注意，如果颜色太少的话，后面颜色不会自动循环，最好多定义几个颜色
+                            var colorList = ['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83', '#ca8622'];
+                            return colorList[parseInt(Math.random()*1000)%7]
+                        }
+                    }
+                }
+            }]
+        };
+        $.post(
+            "/getScoreChartsByCla"
+            ,{"instructor_id":getCookie("username"),'date':$('#date').val()}
+            ,function (o) {
+                option.title.text="各班平均分";
+                xdata=[];
+                ydata=[];
+                o=JSON.parse(o);
+                for(i in o){
+                    xdata.push(
+                        o[i].class_name
+                    );
+                    ydata.push(
+                        o[i].avgscore.toFixed(2)
+                    )
+                }
+                option.series[0].data=ydata;
+                option.xAxis.data=xdata;
+                cla_charts.setOption(option);
+                option.series[0].type="line";
+                cla_charts_line.setOption(option);
+                pdata=[];
+                for(i in o){
+                    pdata.push({
+                        name:o[i].class_name
+                        ,value:o[i].avgscore.toFixed(2)
+                    })
+                }
+                option.xAxis.show=false;
+                option.yAxis.show=false;
+                option.series[0].data=pdata;
+                option.series[0].type="pie";
+                cla_charts_pie.setOption(option);
+
+
+                cla_charts_pie.on('mouseover', function(data){
+                    $('#body tr').each(function () {
+                        if($(this).find("td:eq(5)").text()===data.data.name){
+                            $(this).css('background','#ff7889')
+                        }
+                    });
+                });
+                cla_charts_pie.on('mouseout', function(data){
+                    $('#body tr').each(function () {
+                        if($(this).find("td:eq(5)").text()===data.data.name){
+                            $(this).css('background','#fff')
+                        }
+                    })
+                });
+                cla_charts.on('mouseover', function(data){
+                    $('#body tr').each(function () {
+                        if($(this).find("td:eq(5)").text()===data.name){
+                            $(this).css('background','#ff7889')
+                        }
+                    });
+                });
+                cla_charts.on('mouseout', function(data){
+                    $('#body tr').each(function () {
+                        if($(this).find("td:eq(5)").text()===data.name){
+                            $(this).css('background','#fff')
+                        }
+                    })
+                });
+                cla_charts_line.on('mouseover', function(data){
+                    $('#body tr').each(function () {
+                        if($(this).find("td:eq(5)").text()===data.name){
+                            $(this).css('background','#ff7889')
+                        }
+                    });
+                });
+                cla_charts_line.on('mouseout', function(data){
+                    $('#body tr').each(function () {
+                        if($(this).find("td:eq(5)").text()===data.name){
+                            $(this).css('background','#fff')
+                        }
+                    })
+                })
+            }
+        );
+    }
+
+    function getScoreListByCla() {
+        $.post(
+            '/getScoreListByCla'
+            ,{"instructor_id":getCookie("username"),'date':$('#date').val()}
+            ,function (o) {
+                $('#body').html('');
+                o=JSON.parse(o);
+                console.log(o);
+                size=o.length;
+                for(i=0;i<size;i++){
+                    $("#body").append("<tr></tr>")
+                }
+                $('#body tr').each(function (i) {
+                    $(this).append("<td>"+(i+1)+"</td>");
+                    $(this).append("<td>"+o[i].dormitory_id+"</td>");
+                    $(this).append("<td>"+o[i].date+"</td>");
+                    $(this).append("<td>"+o[i].score+"</td>");
+                    if(o[i].img===''){
+                        $(this).append("<td>无</td>")
+                    }else{
+                        $(this).append("<td><a href=\"javascript:void(0)\" data-magnify=\"gallery\"" +
+                            "data-group=\"g1\" data-src="+o[i].img+" data-caption="+o[i].dormitory_id+">\n" +
+                            "<img src="+o[i].img+">\n" +
+                            "</a></td>");
+                    }
+                    $(this).append("<td>"+o[i].class_name+"</td>");
+                    $(this).append("<td>"+o[i].name+"</td>");
+                    $(this).append("<td>"+o[i].remark+"</td>");
+                });
+
+                //图片预览绑定
+                preImg();
+
+                $('#body tr').mouseover(function(){
+                    index=$(this).prevAll().length;
+                    cla_charts.dispatchAction({ type: 'highlight', name:o[index].class_name});
+                    cla_charts_pie.dispatchAction({ type: 'highlight', name:o[index].class_name});
+                    cla_charts_line.dispatchAction({ type: 'highlight', name:o[index].class_name});
+                });
+                $('#body tr').mouseout(function(){
+                    index=$(this).prevAll().length;
+                    cla_charts_pie.dispatchAction({ type: 'downplay', name:o[index].class_name});
+                    cla_charts_line.dispatchAction({ type: 'downplay', name:o[index].class_name});
+                    cla_charts.dispatchAction({ type: 'downplay', name:o[index].class_name});
+                })
+            }
+        );
+    }
+
+//    查看进度
+    function getProgress() {
+        $.post(
+            '/queryProgressToInstructor'
+            ,{"instructorId":getCookie("username"),'date':$('#date').val()}
+            ,function (o) {
+                layui.element.progress('progress',(o*100).toFixed(2)+"%")
+            }
+        );
+    }
+//    图片预览绑定
+    function preImg() {
+        //    图片预览控件初始化
+        $('[data-magnify]').Magnify({
+            Toolbar: [
+                'prev',
+                'next',
+                'rotateLeft',
+                'rotateRight',
+                'zoomIn',
+                'actualSize',
+                'zoomOut'
+            ],
+            keyboard:true,
+            draggable:true,
+            movable:true,
+            modalSize:[800,600],
+            beforeOpen:function (obj,data) {
+                console.log('beforeOpen')
+            },
+            opened:function (obj,data) {
+                console.log('opened')
+            },
+            beforeClose:function (obj,data) {
+                console.log('beforeClose')
+            },
+            closed:function (obj,data) {
+                console.log('closed')
+            },
+            beforeChange:function (obj,data) {
+                console.log('beforeChange')
+            },
+            changed:function (obj,data) {
+                console.log('changed')
+            }
+        });
+    }
+</script>
+</html>

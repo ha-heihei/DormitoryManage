@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../res/layui/css/layui.css"/>
+    <script src="../../../res/js/jquery.js"></script>
+    <script src="../../../res/js/cookie.js"></script>
+    <script src="../../../res/js/echarts.js"></script>
+    <link rel="stylesheet" href="../../../res/layuiadmin/style/admin.css" media="all">
+    <style type="text/css">
+        .layui-col-space15 {
+            margin: -7.5px;
+        }
+        .layui-col-space15>* {
+            padding: 7.5px;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form onsubmit="return false" class="layui-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">体温</label>
+                    <div class="layui-input-inline">
+                        <select type="text" name="abnormal" autocomplete="off" class="layui-input" >
+                            <option value="">不限</option>
+                            <option value="0">无异常</option>
+                            <option value="1">异常</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">起始日期</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="sdate" autocomplete="off" class="layui-input" id="sdate">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">截至日期</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="edate" autocomplete="off" class="layui-input" id="edate">
+                    </div>
+                </div>
+
+                <div class="layui-inline" >
+                    <div class="layui-btn-container" >
+                        <button class="layui-btn layui-btn-normal layui-btn-sm" id="query">查询</button>
+                        <button class="layui-btn layui-btn-warm layui-btn-sm" id="xls">导出Excel</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <table class="layui-table" lay-size="sm">
+            <thead>
+            <tr>
+                <td>学号</td>
+                <td>日期</td>
+                <td>班级</td>
+                <td>姓名</td>
+                <td>性别</td>
+                <td>早晨温度</td>
+                <td>中午温度</td>
+                <td>是否异常</td>
+            </tr>
+            </thead>
+            <tbody id="body"></tbody>
+        </table>
+        <div style="margin: 8px auto;text-align: center">
+            <div id="page" style="background: #fff"></div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../../../res/layui/layui.all.js"></script>
+<script>
+    var DownLoadFile = function (options) {
+        var config = $.extend(true, { method: 'post' }, options);
+        var $iframe = $('<iframe id="down-file-iframe" />');
+        var $form = $('<form target="down-file-iframe" method="' + config.method + '" />');
+        $form.attr('action', config.url);
+        for (var key in config.data) {
+            $form.append('<input type="hidden" name="' + key + '" value="' + config.data[key] + '" />');
+        }
+        $iframe.append($form);
+        $(document.body).append($iframe);
+        $form[0].submit();
+        console.log($form.serialize());
+        $iframe.remove();
+    };
+    $(function () {
+    //    日期绑定
+        layui.laydate.render({
+            elem:'#sdate'
+        });
+        layui.laydate.render({
+            elem:'#edate'
+        });
+
+        pageList();
+
+        $('#query').click(function () {
+            pageList();
+        });
+
+        $('#xls').click(function () {
+            DownLoadFile({
+                url:'/downLoadQN'
+                ,data:{'sdate':$('input[name=sdate]').val(),'edate':$('input[name=edate]').val()
+                    ,'abnormal':$('select[name=abnormal]').val()}
+            })
+        })
+
+    });
+
+    function pageList() {
+        $.post(
+            '/queryQN'
+            ,{'sdate':$('input[name=sdate]').val(),'edate':$('input[name=edate]').val()
+                ,'abnormal':$('select[name=abnormal]').val(),'start':0,'end':1}
+            ,function (o) {
+                layui.laypage.render({
+                    elem: 'page'
+                    , count: JSON.parse(o).num
+                    , layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                    , jump: function (obj) {
+                        getList(obj.curr, obj.limit)
+                    }
+                });
+            }
+        )
+    }
+
+    function getList(p,l) {
+        $.post(
+            '/queryQN'
+            ,{'sdate':$('input[name=sdate]').val(),'edate':$('input[name=edate]').val()
+                ,'abnormal':$('select[name=abnormal]').val(),'start':(p-1)*l,'end':l}
+            ,function (o) {
+                $('#body').html('');
+                let data=JSON.parse(JSON.parse(o).data);
+                for(let i=0;i<data.length;i++){
+                    $('#body').append("<tr></tr>");
+                }
+
+                $('#body tr').each(function (i) {
+                    $(this).append("<td>"+data[i].stunumber+"</td>");
+                    $(this).append("<td>"+data[i].date+"</td>");
+                    $(this).append("<td>"+data[i].cla+"</td>");
+                    $(this).append("<td>"+data[i].name+"</td>");
+                    $(this).append("<td>"+data[i].sex+"</td>");
+                    $(this).append("<td>"+data[i].zao_wen+"</td>");
+                    $(this).append("<td>"+data[i].zhong_wen+"</td>");
+                    if(parseFloat(data[i].zao_wen)>37||parseFloat(data[i].zhong_wen)>37){
+                        $(this).append("<td style='color: red;font-weight: bold;'><span class='layui-badge'>异常</span></td>");
+                    }else{
+                        $(this).append("<td style='color: #1AA093;font-weight: bold'><span class='layui-badge layui-bg-orange'>正常</span></td>");
+                    }
+                })
+            }
+        )
+    }
+</script>
+</html>

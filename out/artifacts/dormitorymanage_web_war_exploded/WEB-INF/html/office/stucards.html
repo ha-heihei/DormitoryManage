@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../res/layui/css/layui.css"/>
+    <script src="../../../res/js/jquery.js"></script>
+    <script src="../../../res/js/cookie.js"></script>
+    <link rel="stylesheet" href="../../../res/layuiadmin/style/admin.css" media="all">
+</head>
+<body>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <button class="layui-btn layui-btn-normal layui-btn-sm" onclick="addStuCards()">新增人员</button>
+    </div>
+    <div class="layui-card-body">
+        <table class="layui-table" lay-size="sm">
+            <thead>
+            <tr>
+                <td>序号</td>
+                <td>用户名</td>
+                <td>姓名</td>
+                <td>电话</td>
+                <td>邮箱</td>
+                <td>操作</td>
+            </tr>
+            </thead>
+            <tbody id="body"></tbody>
+        </table>
+        <div style="margin: 8px auto;text-align: center">
+            <div id="page" style="background: #fff"></div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../../../res/layui/layui.all.js"></script>
+<script type="text/javascript">
+    $(function () {
+        pageList()
+    });
+    function pageList() {
+        $.post(
+            '/getStuCardsList'
+            ,{'start':0,'end':1}
+            ,function (o) {
+                layui.laypage.render({
+                    elem: 'page'
+                    , count: JSON.parse(o).num
+                    , layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                    , jump: function (obj) {
+                        getList(obj.curr, obj.limit)
+                    }
+                });
+            }
+        )
+    }
+    function getList(p,l) {
+        $.post(
+            '/getStuCardsList'
+            , {"start": (p - 1) * l, "end": l}
+            , function (o) {
+                showList(o, p, l)
+            }
+        )
+    }
+
+    function showList(o, p, l) {
+        $('#body').html("");
+        let json = JSON.parse(JSON.parse(o).data);
+        let size = json.length;
+        for (let i = 0; i < size; i++) {
+            $("#body").append("<tr></tr>")
+        }
+        $("#body tr").each(function (i) {
+            $(this).append("<td>" + ((p - 1) * l + i + 1) + "</td>");
+            $(this).append("<td>" + json[i].username + "</td>");
+            $(this).append("<td>" + json[i].name + "</td>");
+            $(this).append("<td>" + json[i].phone + "</td>");
+            $(this).append("<td>" + json[i].email + "</td>");
+            $(this).append("<td><button class='layui-btn layui-btn-sm layui-btn-warm edit'>" +
+                "<i class='layui-icon layui-icon-edit'/>编辑</button>" +
+                "<button class='layui-btn layui-btn-sm layui-btn-danger delete'>" +
+                "<i class='layui-icon layui-icon-delete'/>删除</button></td>");
+        });
+
+        $("#body button.delete").each(function (i) {
+            $(this).click(function () {
+                layer.confirm('确认删除吗?', {icon: 3, title:'提示'}, function(index){
+                    //do something
+                    $.post(
+                        '/deleteStuCards'
+                        ,{'id':json[i].id}
+                        ,function (o) {
+                            o=JSON.parse(o);
+                            if(o.code===1){
+                                layer.msg("删除失败")
+                            }else if(o.code===0){
+                                layer.msg("删除成功");
+                                layer.close(index);
+                                pageList();
+                            }
+                        }
+                    );
+
+                });
+            })
+        })
+
+    }
+
+//    新增学生干部
+    function addStuCards() {
+        layer.open({
+            type:2
+            ,title:'新增人员'
+            ,content:'/office/addstucards'
+            ,area: ['700px','420px']
+            ,btnAlign:'c'
+            ,btn:['提交','取消']
+            ,yes:function (i,o) {
+                var body = layer.getChildFrame('body',i);
+                btn=body.find('button');
+                btn.click();
+            }
+        })
+    }
+</script>
+</html>

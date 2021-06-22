@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../res/layui/css/layui.css"/>
+    <script src="../../../res/js/jquery.js"></script>
+    <script src="../../../res/js/cookie.js"></script>
+    <script src="../../../res/js/echarts.js"></script>
+    <link rel="stylesheet" href="../../../res/layuiadmin/style/admin.css" media="all">
+    <!--    图片预览控件引入-->
+    <link rel="stylesheet" href="/res/css/preimg/index.css">
+    <script src="https://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+    <script src="https://libs.baidu.com/jquery/1.10.2/jquery.min.js"></script>
+    <script src="/res/js/preimg/index.js"></script>
+    <script src="/res/js/preimg/jquery.rotate.min.js"></script>
+    <style type="text/css">
+        .layui-col-space15 {
+            margin: -7.5px;
+        }
+        .layui-col-space15>* {
+            padding: 7.5px;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <div class="layui-row">
+
+             <div class="layui-col-md4 layui-col-sm12">
+                 <div class="layui-input-inline">
+                     <input type="text" name="date"  id="date" autocomplete="off" class="layui-input">
+                 </div>
+                 <button class="layui-btn layui-btn-normal " id="query">查询</button>
+                 <button class="layui-btn layui-btn-warm " id="xls">导出Excel</button>
+             </div>
+
+            <div class="layui-col-md8 layui-col-sm12">
+                <div >
+                    <fieldset class="layui-elem-field layui-field-title" style="margin-top: -8px;">
+                        <legend>查宿进度</legend>
+                    </fieldset>
+                    <div class="layui-progress " lay-showPercent="true" lay-filter="progress">
+                        <div class="layui-progress-bar layui-bg-blue" lay-percent="0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <div class="layui-card-body ">
+        <div class="layui-row">
+            <div class="layui-col-md12">
+                <table class="layui-table" lay-size="sm">
+                    <thead>
+                    <tr>
+                        <td>序号</td>
+                        <td>学号</td>
+                        <td>姓名</td>
+                        <td>班级</td>
+                        <td>宿舍号</td>
+                        <td>宿舍照</td>
+                        <td>分数</td>
+                        <td>辅导员</td>
+                        <td>备注</td>
+                        <td>操作</td>
+                    </tr>
+                    </thead>
+                    <tbody id="body"></tbody>
+                </table>
+                <div style="margin: 8px auto;text-align: center">
+                    <div id="page" style="background: #fff"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+<script src="../../../res/layui/layui.all.js"></script>
+<script type="text/javascript">
+    var DownLoadFile = function (options) {
+        var config = $.extend(true, { method: 'post' }, options);
+        var $iframe = $('<iframe id="down-file-iframe" />');
+        var $form = $('<form target="down-file-iframe" method="' + config.method + '" />');
+        $form.attr('action', config.url);
+        for (var key in config.data) {
+            $form.append('<input type="hidden" name="' + key + '" value="' + config.data[key] + '" />');
+        }
+        $iframe.append($form);
+        $(document.body).append($iframe);
+        $form[0].submit();
+        console.log($form.serialize());
+        $iframe.remove();
+    };
+
+    function downLoadXLS(){
+        DownLoadFile({
+            url:'/downLoadExcelToOffice'
+            ,data:{date:$('input[name=date]').val()}
+        })
+    }
+    $(function () {
+        layui.laydate.render({
+            elem: '#date'
+        });
+
+        setInterval(queryProgressToOffice,1000);
+
+        pageList();
+        $('#query').click(function () {
+            pageList()
+        });
+        $('#xls').click(function () {
+            downLoadXLS()
+        })
+    });
+
+    function queryProgressToOffice() {
+        $.post(
+            '/queryProgressToOffice'
+            ,{'date':$('input[name=date]').val()}
+            ,function (o) {
+                layui.element.progress('progress',(o*100).toFixed(2)+"%")
+            }
+        )
+    }
+
+    function pageList() {
+        $.post(
+            '/getAllScoreToOffice'
+            , {"start": 0, "end": 1,"date":$('input[name=date').val()}
+            , function (o) {
+                layui.laypage.render({
+                    elem: 'page'
+                    , count: JSON.parse(o).num
+                    , layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                    , jump: function (obj) {
+                        getAllScoreList(obj.curr, obj.limit)
+                    }
+                });
+            }
+        );
+    }
+
+    function getAllScoreList(p,l) {
+        $.post(
+            '/getAllScoreToOffice'
+            , {"start": (p - 1) * l, "end": l,"date":$('input[name=date').val()}
+            , function (o) {
+                showList(o, p, l);
+                console.log(o);
+            }
+        )
+    }
+
+    function showList(o,p,l) {
+        $('#body').html("");
+        let json = JSON.parse(JSON.parse(o).data);
+        let size = json.length;
+        for (let i = 0; i < size; i++) {
+            $("#body").append("<tr></tr>")
+        }
+        $("#body tr").each(function (i) {
+            $(this).append("<td>" + ((p-1)*l+(i + 1)) + "</td>");
+            $(this).append("<td>" + json[i].stunumber + "</td>");
+            $(this).append("<td>" + json[i].name + "</td>");
+            $(this).append("<td>" + json[i].class_name + "</td>");
+            $(this).append("<td>" + json[i].dormitory_id + "</td>");
+            if(json[i].img===''){
+                $(this).append("<td>无</td>")
+            }else{
+                $(this).append("<td><a href=\"javascript:void(0)\" data-magnify=\"gallery\"" +
+                    "data-group=\"g1\" data-src="+json[i].img+" data-caption="+json[i].dormitory_id+">\n" +
+                    "<img src="+json[i].img+">\n" +
+                    "</a></td>");
+            }
+            $(this).append("<td>" + json[i].score + "</td>");
+            $(this).append("<td>" + json[i].instructor_id + "</td>");
+            $(this).append("<td>" + json[i].remark + "</td>");
+            $(this).append("<td><button class='layui-btn layui-btn-sm layui-btn-warm edit'>" +
+                "<i class='layui-icon layui-icon-edit'/>编辑</button></td>");
+        });
+
+        preImg()
+    }
+    //    图片预览绑定
+    function preImg() {
+        //    图片预览控件初始化
+        $('[data-magnify]').Magnify({
+            Toolbar: [
+                'prev',
+                'next',
+                'rotateLeft',
+                'rotateRight',
+                'zoomIn',
+                'actualSize',
+                'zoomOut'
+            ],
+            keyboard:true,
+            draggable:true,
+            movable:true,
+            modalSize:[800,600],
+            beforeOpen:function (obj,data) {
+                console.log('beforeOpen')
+            },
+            opened:function (obj,data) {
+                console.log('opened')
+            },
+            beforeClose:function (obj,data) {
+                console.log('beforeClose')
+            },
+            closed:function (obj,data) {
+                console.log('closed')
+            },
+            beforeChange:function (obj,data) {
+                console.log('beforeChange')
+            },
+            changed:function (obj,data) {
+                console.log('changed')
+            }
+        });
+    }
+</script>
+</html>

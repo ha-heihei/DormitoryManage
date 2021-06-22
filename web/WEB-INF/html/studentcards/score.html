@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../res/layui/css/layui.css"/>
+<!--    <script src="../../../res/js/jquery.js"></script>-->
+    <script src="https://www.jq22.com/jquery/2.1.1/jquery.min.js"></script>
+    <script src="../../../res/js/cookie.js"></script>
+    <link rel="stylesheet" href="../../../res/layuiadmin/style/admin.css" media="all">
+    <script src="/res/js/jquery.cropit.js"></script>
+    <style>
+        .cropit-preview {
+            background-color: #f8f8f8;
+            background-size: cover;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            margin-top: 7px;
+            margin-bottom: 7px;
+            width: 100%;
+            height: 250px;
+        }
+    </style>
+</head>
+<body>
+<div style="margin: 40px auto;text-align: center">
+    <div class="layui-fluid ">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md-offset2 layui-col-md4">
+                <form style="margin: auto;text-align: center" action="/stuscore" onsubmit="return false" method="post" class="layui-form layui-inline" >
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">宿舍号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="dormitory_id" required lay-verify="required" autocomplete="off" class="layui-input">
+                        </div>
+<!--                        <div class="layui-form-mid layui-word-aux">*必填项</div>-->
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">日期</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="date" required readonly lay-verify="required" autocomplete="off" class="layui-input">
+                        </div>
+<!--                        <div class="layui-form-mid layui-word-aux">查宿日期</div>-->
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">分数</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="score" required lay-verify="required" autocomplete="off" class="layui-input">
+                        </div>
+<!--                        <div class="layui-form-mid layui-word-aux">分数</div>-->
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">备注</label>
+                        <div class="layui-input-inline">
+                            <textarea type="text" name="remark" required lay-verify="required" autocomplete="off" class="layui-textarea"></textarea>
+                        </div>
+<!--                        <div class="layui-form-mid layui-word-aux">备注说明</div>-->
+                    </div>
+                </form>
+            </div>
+            <div class="layui-col-md3">
+                <div class="image-editor" style="top: -22px;position: relative">
+                    <div class="layui-row" >
+                        <div class="layui-col-md2">
+                            <i class="layui-icon layui-icon-add-1" id="addImg"></i>
+                            <!--                    图片问件-->
+                            <input type="file" class="cropit-image-input" style="display: none" name="img">
+                        </div>
+                        <div class="layui-col-md2 layui-col-md-offset7">
+                            <img class="rotate-ccw" style="width: 16px;height: 16px" src="/res/images/ni.png"/>
+                            <img class="rotate-cw" style="width: 16px;height: 16px" src="/res/images/shun.png"/>
+                        </div>
+                    </div>
+                    <div class="layui-row">
+                        <div class="layui-col-md12">
+                            <div class="cropit-preview"></div>
+                        </div>
+                    </div>
+                    <div class="layui-row">
+                        <div class="layui-col-md12">
+                            <input type="range" class="cropit-image-zoom-input" style="width: 100%;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="layui-btn layui-btn-normal" id="submit">提交</button>
+</div>
+</body>
+<script src="../../../res/layui/layui.all.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("input[name=date]").val(getNowFormatDate());
+
+
+        //图片上传控件脚本
+        $('.image-editor').cropit({
+            imageState: {
+                src: '',
+            },
+        });
+
+        $('#addImg').click(function () {
+            $('input[name=img]').click()
+        });
+
+        $('.rotate-cw').click(function() {
+            $('.image-editor').cropit('rotateCW');
+        });
+        $('.rotate-ccw').click(function() {
+            $('.image-editor').cropit('rotateCCW');
+        });
+    //    图片上传结束
+
+
+        $('#submit').click(function () {
+            var formData = new FormData();
+            formData.append("dormitory_id",$('input[name=dormitory_id]').val());
+            formData.append("date",$('input[name=date]').val());
+            formData.append("score",$('input[name=score]').val());
+            formData.append("remark",$('textarea[name=remark]').val());
+            formData.append("img",$('input[name=img]')[0].files[0]);
+            $.ajax({
+                url: '/stuscore',
+                type: 'POST',
+                data: formData,                    // 上传formdata封装的数据
+                cache: false,                      // 不缓存
+                processData: false,                // jQuery不要去处理发送的数据
+                contentType: false,                // jQuery不要去设置Content-Type请求头
+                success:function (data) {           //成功回调
+                    data=JSON.parse(data);
+                    console.log(data);
+                    if(data.code===1){
+                        layer.msg("提交失败,请稍后重试")
+                    }else if(data.code===0){
+                        layer.msg("提交成功");
+                        setTimeout(function () {
+                            location.reload();
+                        },800)
+                    }
+                }
+            });
+        })
+
+    });
+
+
+    function getNowFormatDate() {
+        var date = new Date();
+        var seperator1 = "-";
+        var year = date.getFullYear();
+        var month = date.getMonth() + 1;
+        var strDate = date.getDate();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        }
+        if (strDate >= 0 && strDate <= 9) {
+            strDate = "0" + strDate;
+        }
+        var currentdate = year + seperator1 + month + seperator1 + strDate;
+        return currentdate;
+    }
+
+</script>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <meta name="author" content="Vincent Garreau" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="/res/layui/css/layui.css">
+    <script src="/res/js/jquery.js"></script>
+</head>
+<body>
+<form class="layui-form" style="margin: 24px auto;text-align: center;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">*学号：</label>
+        <div class="layui-input-inline" style="width: 200px;">
+            <input class="layui-input" name="id" type="text" lay-verify="required" >
+        </div>
+        <div class="layui-form-mid" id="stunumber">学号8位</div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">*用户名：</label>
+        <div class="layui-input-inline" style="width: 200px;">
+            <input class="layui-input" name="username" type="text" lay-verify="required" >
+        </div>
+        <div class="layui-form-mid" id="usertip">请填写用户名</div>
+    </div>
+
+    <div class="layui-form-item">
+        <label class="layui-form-label">姓名：</label>
+        <div class="layui-input-inline" style="width: 200px;">
+            <input class="layui-input" name="name" type="text" lay-verify="required" >
+        </div>
+        <div class="layui-form-mid" id="nametip">请填写真实姓名，以便取得联系</div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">电话：</label>
+        <div class="layui-input-inline" style="width: 200px;">
+            <input class="layui-input" name="phone" type="text" lay-verify="required" >
+        </div>
+        <div class="layui-form-mid" id="phonetip">请填写手机号</div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">邮箱：</label>
+        <div class="layui-input-inline" style="width: 200px;">
+            <input class="layui-input" name="email" type="text" lay-verify="required" >
+        </div>
+        <div class="layui-form-mid" id="emailtip">请填写邮箱</div>
+    </div>
+
+    <button lay-filter="sub" lay-submit style="display: none;" id="btn"></button>
+</form>
+</body>
+<script src="/res/layui/layui.all.js"></script>
+<script>
+    var form = layui.form;
+    form.on('submit(sub)',function (d) {        //表单提交，进行注册
+        loading=layer.load(2,{shade:0.3});
+
+        $.post(
+            '/insertStuCards',
+            $('.layui-form').serialize(),
+            function (o) {
+                layer.close(loading);
+                o=JSON.parse(o);
+                if(o.code===0){
+                    layer.msg('提交成功');
+                    setTimeout(function () {
+                        parent.layer.closeAll();        //父页面关闭所有窗口
+                        parent.pageList();
+                    },800);
+                }else if(o.code===1){
+                    layer.msg('提交失败');
+                }
+            }
+        );
+        return false;
+    })
+</script>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
+    <title>联系我们</title>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=3z0pyqsV445nq0EU4wCVmmGBVtZMbZsO"></script>
+    <script type="text/javascript" src="res/js/jquery.js"></script>
+    <link href="res/reception/css/style.css" rel=stylesheet>
+    <link href="res/layui/css/layui.css" rel=stylesheet>
+    <script type="text/javascript" src="res/layui/layui.js"></script>
+    <style type="text/css">
+        #container {
+            width: 970px;
+            height: 550px;
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div class="main">
+        <a href=""><img src="res/reception/images/logo.png" width="440" height="110" class="png" style=" margin-bottom:5px" /></a>
+    </div>
+</div>
+<div class="menu">
+    <ul>
+        <li ><a href="index.html">系统首页</a></li>
+        <li ><a href="#">系统简介</a></li>
+        <li ><a href="#">最新公告</a></li>
+        <li ><a href="#">宿舍展示</a></li>
+        <li ><a href="#">院系要求</a></li>
+        <li ><a href="#">下放通知</a></li>
+        <li ><a href="#">比赛通知</a></li>
+        <li ><a href="#">学生处</a></li>
+        <li ><a href="http://tiedao.vatuu.com/index.html">教务系统</a></li>
+        <li class="cur"><a href="contact.html">联系我们</a></li>
+    </ul>
+</div>
+<!--banner start-->
+<div class="banner">
+    <ul class="slides">
+        <li style="background:url(res/reception/images/1.png) 50% 0 no-repeat;"></li>
+    </ul>
+</div>
+
+<div class="layui-row" style="margin: 10px;">
+    <div class="layui-col-md4" >
+        <div style="margin-top: 10px;margin-left: 30px;margin-right: 20px;padding: 16px">
+            <ul>
+                <br/>
+                <li> 地址：石家庄铁道大学卫生处办</li>
+                <br/>
+                <li> 电话：+86-17531024866</li>
+                <br/>
+                <li>传真：+86-1476528</li>
+                <br/>
+                <li>邮箱：25476589@stu.cn.com</li>
+                <br/>
+                <li> 微信平台 ：stdwsb</li>
+                <br/>
+                <li style="color: #1E9FFF"> 卫生处欢迎你的到来</li>
+            </ul>
+            <img src="res/reception/images/bangong.jpg" style="width: 390px;height: 350px;margin-top: 10px;">
+        </div>
+
+    </div>
+    <div class="layui-col-md8">
+        所在宿舍:&nbsp;&nbsp;<input type="text" list="list1" id="dor_local" style="margin-bottom: 20px;margin-top: 10px; height: 22px;"/>
+        <datalist id="list1">
+            <option value="九栋"/>
+            <option value="十栋"/>
+            <option value="十一栋"/>
+        </datalist>
+        <div id="container"></div>
+    </div>
+
+</div>
+<div class="f_link">
+    <div class="main"><b>友情链接:</b><a href="http://tiedao.vatuu.com/index.html">教务处</a>
+    </div>
+</div>
+<div class="foot_x">
+    <div class="main">
+        <div class="bottomnav">
+            <a href="#">系统首页</a>
+            <a href="#" >系统简介</a>
+            <a href="#">最新公告</a>
+            <a href="#">宿舍展示</a>
+            <a href="#">院系要求</a>
+            <a href="#">下放通知</a>
+            <a href="#">比赛通知</a>
+            <a href="#">学生处</a>
+            <a href="#">教务处</a>
+            <a href="#">联系我们</a>
+            <script type="text/javascript">
+                $(".bottomnav a:first").css("border",0);
+            </script>
+        </div>
+        <div class="bootTxt">
+            地址：石家庄铁道大学卫生处办   &nbsp; 电话：+86-17531024866   &nbsp;  传真：+86-1476528<br/>
+            版权所有：Copyright ©2020-2021 云起动力团队版权所有
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var map = new BMap.Map("container");
+    map.centerAndZoom(new BMap.Point(114.515029, 38.089425), 18);
+    map.enableScrollWheelZoom(true); // 开启鼠标滚轮缩放
+
+    var walking = new BMap.WalkingRoute(map, {
+        renderOptions: {
+            map: map,
+            autoViewport: true
+        }
+    });
+
+    var start = new BMap.Point(114.517929, 38.089712);
+    var end = new BMap.Point(114.515029, 38.089425);
+    walking.search(start, end);
+
+</script>
+
+<script>
+    $(function () {
+
+        $("#dor_local").change(function () {
+
+            var v1 = $('#dor_local').val();
+
+            if (v1 == '九栋') {
+                start = new BMap.Point(114.517929, 38.089712);
+            } else if (v1 == '十栋') {
+                start = new BMap.Point(114.518445, 38.090030);
+            } else if (v1 == '十一栋') {
+                start = new BMap.Point(114.517625, 38.090090);
+            }
+
+            walking.search(start, end);
+
+        });
+
+    });
+</script>
+
+</body>
+</html>

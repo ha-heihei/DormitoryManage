@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>website</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="website">
+<meta name="keywords" content="website">
+<script type="text/javascript" src="js/swfobject/swfobject.js"></script>
+<style type="text/css">
+	 /* hide from ie on mac \*/
+	html {
+		height: 100%;
+	}
+	#flashcontent {
+		height: 100%;
+	}
+	/* end hide */
+	body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	font: 10px tahoma;
+	background-image: url(images/bg.jpg);
+	}
+	td {
+		font-size: 10px;
+		color: #999;
+	}
+	a {
+		color: #999;
+		text-decoration: none;
+	}
+	a:hover {
+		text-decoration: underline;
+	}
+</style>
+
+</head>
+<body>
+<table width="100%" height="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+	<td align="center" valign="middle">
+		<table width="1000" border="0" cellpadding="0" cellspacing="0">
+			<tr> 
+			  <td align="center">
+				<div id="flashcontent"> 
+				  <table width="100%" height="100%" border="0" cellpadding="0" cellspacing="0">
+					<tr> 
+					  <td height="582" align="center"> <font face="Arial, Helvetica, sans-serif">Loading error : please click Refresh on your browser.<br>You may not have Version 8 of the Flash Player installed on your computer.  
+						Please <a href="http://www.adobe.com/go/getflashplayer" target="_blank">click 
+						here</a> to download the Flash plugin.<br>
+						<br>
+						
+					  Thank you.</font></td>
+					</tr>
+				  </table>
+				</div>
+				<script type="text/javascript">
+					// <![CDATA[
+						var so = new SWFObject('shell.swf', 'website', '1002', '700', '8');
+						so.useExpressInstall('js/swfobject/expressinstall.swf');
+						so.addParam('menu', 'false');
+						so.addParam("scale", "noscale");    
+						so.addVariable("conf", "conf.xml");
+						so.write('flashcontent');
+					// ]]>
+				</script>			</td>
+        </tr>
+      </table>
+	</td>
+  </tr>
+</table>
+</body>
+</html>

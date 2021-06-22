@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lh.dao.ScoreMapper">
+    <!--    分数插入-->
+    <insert id="insertScore" parameterType="com.lh.pojo.Score">
+        insert into score values (#{dormitory_id},#{date},#{score},#{student_cards_id},#{remark},#{imgPath})
+    </insert>
+    
+    <resultMap id="scoreAndUser" type="com.lh.dto.ScoreAndUser">
+        <id property="score.dormitory_id" column="dormitory_id"/>
+        <result property="score.score" column="score"/>
+        <result property="score.date" column="date"/>
+        <result property="score.remark" column="remark"/>
+        <result property="score.student_cards_id" column="student_cards_id"/>
+        <result property="user.name" column="name"/>
+        <result property="academy" column="academy"/>
+    </resultMap>
+
+    <sql id="getScoreListSql" >
+        <choose>
+            <when test="date!=null and date!=''">
+                and date=#{date}
+            </when>
+            <otherwise>
+                and date in
+                (select date from (select date from score order by date desc limit 1) as t)
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="getScoreList" resultMap="scoreAndUser" parameterType="map">
+        select * from score,user,dict where score.student_cards_id=user.id
+        and score.dormitory_id=dict.dormitory_id and score.student_cards_id=#{id}
+        <include refid="getScoreListSql"/>
+        order by score desc limit #{start},#{end}
+    </select>
+    <select id="getScoreListCount" resultType="int" parameterType="map">
+        select count(*) from score,user,dict where score.student_cards_id=user.id
+        and score.dormitory_id=dict.dormitory_id and score.student_cards_id=#{id}
+        <include refid="getScoreListSql"/>
+        order by score desc limit #{start},#{end}
+    </select>
+
+    <update id="updateScore" parameterType="map" >
+        update score set score=#{score},remark=#{remark} where dormitory_id=#{dormitory_id}
+        and date=#{date}
+    </update>
+
+    <resultMap id="map" type="map"/>
+
+    <select id="getScoreChartsByCla" resultMap="map" parameterType="map">
+        select avg(score) avgscore,class_name,date from user u join score c on u.id=c.student_cards_id
+        join student s
+        on c.dormitory_id=s.dormitory_id  where
+        s.instructor_id=#{instructor_id}
+        <choose>
+            <when test="date!=null and date!=''">
+                and date=#{date}
+            </when>
+            <otherwise>
+                and date in (select date from (select date from score order by date desc limit 1) as t)
+            </otherwise>
+        </choose>
+        group by class_name
+    </select>
+
+    <select id="getScoreListByCla" resultMap="map" parameterType="map">
+        select s.class_name,c.*,u.name from user u join score c on u.id=c.student_cards_id
+        join student s
+        on c.dormitory_id=s.dormitory_id where s.instructor_id=#{instructor_id}
+        <choose>
+            <when test="date!=null and date!=''">
+                and date=#{date}
+            </when>
+            <otherwise>
+                and date in (select date from (select date from score order by date desc limit 1) as t)
+            </otherwise>
+        </choose>
+        group by dormitory_id
+    </select>
+
+
+    <select id="getAllScoreToOffice" parameterType="map" resultMap="map">
+        select stu.stunumber,stu.name,stu.class_name,c.dormitory_id,stu.instructor_id,stu.remark,u.name,c.score,c.img
+        from user u join score c on u.id=c.student_cards_id join student stu
+        on stu.dormitory_id=c.dormitory_id
+        <where>
+            <choose>
+                <when test="date!=null and date!=''">
+                    and date=#{date}
+                </when>
+                <otherwise>
+                    and date in (select date from (select date from score order by date desc limit 1) as t)
+                </otherwise>
+            </choose>
+        </where>
+        limit #{start},#{end}
+    </select>
+    <select id="getAllScoreSizeToOffice" parameterType="map" resultType="integer">
+        select count(*) from user u join score c on u.id=c.student_cards_id join student stu
+        on stu.dormitory_id=c.dormitory_id
+        <where>
+            <choose>
+                <when test="date!=null and date!=''">
+                    and date=#{date}
+                </when>
+                <otherwise>
+                    and date in (select date from (select date from score order by date desc limit 1) as t)
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <select id="downLoadScoreListByDate" resultMap="map" parameterType="map">
+        select sco.date,sco.score,stu.stunumber,stu.name,stu.instructor_id,
+         stu.dormitory_id,stu.remark,stu.class_name
+         from student stu join score sco on stu.dormitory_id=sco.dormitory_id
+         where sco.student_cards_id=#{studentcardsid}
+        <choose>
+            <when test="date!=null and date!=''">
+                and date=#{date}
+            </when>
+            <otherwise>
+                and date in (select date from (select date from score order by date desc limit 1) as t)
+            </otherwise>
+        </choose>
+    </select>
+    
+
+<!--    学生处图表功能-->
+
+    <select id="getScoreDetail" resultMap="map" parameterType="map">
+        select avg(sco.score) score,stu.class_name claname from score sco join student stu
+        on sco.dormitory_id=stu.dormitory_id
+        <where>
+            <choose>
+                <when test="date!=null and date!=''">
+                    and date=#{date}
+                </when>
+                <otherwise>
+                    and date in (select date from (select date from score order by date desc limit 1) as t)
+                </otherwise>
+            </choose>
+        </where>
+        group by class_name
+    </select>
+    
+    <select id="getPreCla" resultMap="map" parameterType="map">
+        select avg(sco.score) score,stu.class_name claname from score sco join student stu
+        on sco.dormitory_id=stu.dormitory_id
+        <where>
+            <choose>
+                <when test="date!=null and date!=''">
+                    and date=#{date}
+                </when>
+                <otherwise>
+                    and date in (select date from (select date from score order by date desc limit 1) as t)
+                </otherwise>
+            </choose>
+        </where>
+        group by class_name order by score desc limit 3
+    </select>
+
+    <select id="getPreDormitory" parameterType="map" resultMap="map">
+        select avg(score) score,dormitory_id from score
+        <where>
+            <choose>
+                <when test="date!=null and date!=''">
+                    and date=#{date}
+                </when>
+                <otherwise>
+                    and date in (select date from (select date from score order by date desc limit 1) as t)
+                </otherwise>
+            </choose>
+        </where>
+        group by dormitory_id order by score desc limit 3
+    </select>
+
+    <select id="downLoadExcelToOffice" parameterType="map" resultMap="map">
+        select sco.date,sco.score,stu.stunumber,stu.name,stu.instructor_id,
+        stu.dormitory_id,stu.remark,stu.class_name
+        from score sco join student stu on sco.dormitory_id=stu.dormitory_id
+        <where>
+            <choose>
+                <when test="date!=null and date!=''">
+                    and date=#{date}
+                </when>
+                <otherwise>
+                    and date in (select date from (select date from score order by date desc limit 1) as t)
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+
+<!--    查询单人所有的信息数据-->
+    <select id="queryAllScore" parameterType="map" resultMap="map">
+        select sco.score score,sco.date,score.img img date from student stu join score sco on
+        sco.dormitory_id=stu.dormitory_id
+        where stu.stunumber=#{stunumber}
+    </select>
+
+<!--    查询某次宿舍成绩-->
+    <select id="queryDorScore" parameterType="map" resultMap="map">
+        select * from score where dormitory_id=#{dormitoryId} and date=#{date}
+    </select>
+
+<!--    分页查询往日成绩-->
+    <select id="queryPageDorScore" parameterType="map" resultMap="map">
+        select * from student stu join score sco on
+        sco.dormitory_id=stu.dormitory_id
+        where stu.stunumber=#{stunumber}
+        order by date desc limit #{start},#{end}
+    </select>
+
+<!--    查询总数-->
+    <select id="queryPageDorScoreCount" parameterType="map" resultType="int">
+        select count(distinct(date)) from student stu join score sco on
+        sco.dormitory_id=stu.dormitory_id
+        where stu.stunumber=#{stunumber}
+    </select>
+
+
+<!--    导员查看查宿进度-->
+    <select id="queryNowDorCount" parameterType="map" resultType="int" >
+        select count(distinct(sco.dormitory_id)) from score sco join student stu on sco.dormitory_id=stu.dormitory_id
+        <where>
+            instructor_id=#{instructorId}
+            <choose>
+                <when test='date!=null and date!=""'>
+                    and date=#{date}
+                </when>
+                <otherwise>
+                    and date in (select date from (select date from score order by date desc limit 1) as t)
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+<!--    -->
+    <select id="queryNowDorAllCount" parameterType="map" resultType="int">
+        select count(distinct(dormitory_id)) from student where instructor_id=#{instructorId}
+    </select>
+
+
+<!--    学生处查看查宿进度-->
+    <select id="queryNowAllDorCount" parameterType="map" resultType="int" >
+        select count(distinct(sco.dormitory_id)) from score sco join student stu on sco.dormitory_id=stu.dormitory_id
+        <where>
+            <choose>
+                <when test='date!=null and date!=""'>
+                    and date=#{date}
+                </when>
+                <otherwise>
+                    and date in (select date from (select date from score order by date desc limit 1) as t)
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <!--    -->
+    <select id="queryDorAllCount"  resultType="int">
+        select count(distinct(dormitory_id)) from student
+    </select>
+</mapper>

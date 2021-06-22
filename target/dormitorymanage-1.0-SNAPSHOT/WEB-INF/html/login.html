@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>登录</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" media="screen" href="../../res/css/style.css">
+    <link rel="stylesheet" type="text/css" href="../../res/css/reset.css"/>
+    <link rel="stylesheet" type="text/css" href="../../res/layui/css/layui.css"/>
+    <script src="../../res/js/jquery.js"></script>
+    <link rel="stylesheet" href="../../res/css/animate.min.css">
+    <script src="../../res/js/wow.min.js"></script>
+    <script>
+        if (!(/mise [6][7][8][9]/i.test(navigator.userAgent)))
+        {
+            new WOW().init();
+        };
+    </script>
+</head>
+<body>
+
+<div id="particles-js" style="display: -webkit-flex;display: flex;justify-content: center">
+    <div class="login wow flipInY" style="" data-wow-delay="0.5s">
+        <div class="login-top">
+            登录
+        </div>
+        <div class="login-center clearfix">
+            <div class="login-center-img"><img src="../../res/images/name.png"/></div>
+            <div class="login-center-input">
+                <input type="text" name="name" value="" placeholder="请输入您的用户名" onfocus="this.placeholder=''" onblur="this.placeholder='请输入您的用户名'"/>
+                <div class="login-center-input-text">用户名</div>
+            </div>
+        </div>
+        <div class="login-center clearfix">
+            <div class="login-center-img"><img src="../../res/images/password.png"/></div>
+            <div class="login-center-input">
+                <input type="password" name="pwd"value="" placeholder="请输入您的密码" onfocus="this.placeholder=''" onblur="this.placeholder='请输入您的密码'"/>
+                <div class="login-center-input-text">密码</div>
+            </div>
+        </div>
+        <div class="login-center clearfix">
+            <div class="login-center-img"><i class="layui-icon" style="font-size: 20px;">&#xe679;</i></div>
+            <div class="login-center-input" style="width: 120px;display: inline-block">
+                <input type="text" name="code" value="" placeholder="验证码" onfocus="this.placeholder=''" onblur="this.placeholder='验证码'"/>
+                <div class="login-center-input-text">验证码</div>
+            </div>
+            <div style="width: 80px;display: inline-block;margin-left: 12px;">
+                <img src="/checkcode" id="code" alt="验证码" style="width: 100%;height: 100%;">
+            </div>
+        </div>
+        <div style="margin: auto;text-align: center;" class="layui-btn-container">
+            <button class="layui-btn layui-btn-normal" onclick="login()" style="border-radius: 4px">登 录</button>
+        </div>
+    </div>
+    <div class="sk-rotating-plane"></div>
+</div>
+</body>
+<script src="../../res/layui/layui.all.js"></script>
+<script>
+    $(function(){
+        $('#code').click(function(){
+            $(this).attr('src',$(this).attr('src').split("?")[0]+"?m=checkcode&"+Math.random())
+        })
+    })
+
+    function login() {
+
+        loading=layer.load(2,{shade:0.5});
+        let name=$('input[name=name]').val();
+        let pwd=$('input[name=pwd]').val();
+        let code=$('input[name=code]').val();
+        $.post(
+            '/login',
+            {'username':name,'password':pwd,'usercode':code},
+            function (msg) {
+                layer.close(loading);
+                o=JSON.parse(msg);
+                if(o.code===2){
+                    layer.msg("验证码错误")
+                }else if(o.code===1){
+                    layer.msg("用户名或密码错误")
+                }else if(o.code===0){
+                    layer.msg("登陆成功");
+                    if(o.status==="1"){
+                        location="/forward/stuindex";
+                    }else if(o.status==="2"){
+                        location="/forward/instructor";
+                    }else if(o.status==="3"){
+                        location="/forward/office"
+                    }else if(o.status==='0'){
+                        location='/forward/student';
+                    }
+                }
+            }
+        )
+    }
+    function tip(msg){
+        layer.open({
+            title:false
+            ,closeBtn:false
+            ,content:msg
+            ,icon:2
+            ,btn:['确认']
+            ,yes:function(index, layero){
+                layer.close(index);
+            }
+        });
+    }
+
+</script>
+</html>

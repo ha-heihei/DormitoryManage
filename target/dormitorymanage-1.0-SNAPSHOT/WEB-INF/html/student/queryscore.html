@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../res/layui/css/layui.css"/>
+    <script src="../../../res/js/jquery.js"></script>
+    <script src="../../../res/js/cookie.js"></script>
+    <script src="../../../res/js/echarts.js"></script>
+    <link rel="stylesheet" href="../../../res/layuiadmin/style/admin.css" media="all">
+    <style type="text/css">
+        .layui-col-space15 {
+            margin: -7.5px;
+        }
+        .layui-col-space15>* {
+            padding: 7.5px;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <div class="layui-row">
+            <div class="layui-col-md4">
+                <form onsubmit="return false" class="layui-form">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">查宿日期</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="date"  id="date" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <div class="layui-btn-container">
+                                <button class="layui-btn layui-btn-normal layui-btn-sm" id="query">查询</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="layui-col-md-offset4 layui-col-md4">
+                <div id="msg"></div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-row">
+            <div class="layui-col-md6 layui-col-md-offset1" >
+                <div id="chart" style="height: 400px;width: 400px" class="layui-fluid"></div>
+            </div>
+            <div class="layui-col-md4">
+                <table class="layui-table" lay-size="sm" lay-skin="nob">
+                    <thead>
+                    <tr>
+                        <td>序号</td>
+                        <td>日期</td>
+                        <td>分数</td>
+                    </tr>
+                    </thead>
+                    <tbody id="body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div style="margin: 8px auto;text-align: center">
+        <div id="page" style="background: #fff"></div>
+    </div>
+</div>
+</body>
+<script src="../../../res/layui/layui.all.js"></script>
+<script>
+    var chart=echarts.init($('#chart')[0]);
+$(function () {
+
+    layui.laydate.render({
+        elem:'#date'
+    });
+
+    $.post(
+        '/queryPageDorScore'
+        ,{'stunumber':getCookie("userid"),'start':0,'end':1}
+        ,function (o) {
+            layui.laypage.render({
+                elem: 'page'
+                , count: JSON.parse(o).num
+                , layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                , jump: function (obj) {
+                    getList(obj.curr, obj.limit)
+                }
+            });
+        }
+    );
+
+    $('#query').click(function () {
+        $.post(
+            '/queryDorScore',
+            {'date':$('input[name=date]').val()}
+            ,function (o) {
+                o=JSON.parse(o);
+                $('#msg').text(o.date+":"+o.score+"分")
+            }
+        )
+    })
+});
+
+function getList(p,l) {
+    $.post(
+        '/queryPageDorScore'
+        ,{'stunumber':getCookie("userid"),'start':(p-1)*l,'end':l}
+        ,function (o) {
+            $('#body').html("");
+            data=JSON.parse(JSON.parse(o).data);
+            console.log(data);
+            for(let i=0;i<data.length;i++){
+                $('#body').append("<tr></tr>");
+            }
+            $('#body tr').each(function (i) {
+                $(this).append("<td>"+((p-1)*l+i+1)+"</td>");
+                $(this).append("<td>"+data[i].date+"</td>");
+                $(this).append("<td>"+data[i].score+"</td>");
+            });
+
+            getChart(data);
+
+            $('#body tr').mouseover(function(){
+                index=$(this).prevAll().length;
+                chart.dispatchAction({
+                    type: 'showTip',
+                    seriesIndex: 0,
+                    dataIndex:index
+                });
+            });
+            $('#body tr').mouseout(function(){
+                index=$(this).prevAll().length;
+                chart.dispatchAction({
+                    type: 'hideTip',
+                    seriesIndex: 0,
+                    dataIndex:index
+                });
+            })
+        }
+    );
+}
+
+function getChart(data) {
+    let option={
+        title: {
+
+        },
+        tooltip: {
+            formatter: function(params, ticket, callback) {
+                let index=params.dataIndex;
+                let img="<br><img src="+data[index].img+" style='width:200px'>";
+                if(data[index].img===''){
+                    img="<br>宿舍图片 : 无"
+                }
+                return data[index].date +" : "+data[index].score+ "<br />" + img;
+            }
+        },
+        legend: {
+            data:['分数']
+        },
+        xAxis:{
+
+        },
+        yAxis:{},
+        series: [{
+            name: '分数',
+            type: "line",
+            itemStyle: {
+                normal: {
+                    //这里是重点
+                    color: function(params) {
+                        //注意，如果颜色太少的话，后面颜色不会自动循环，最好多定义几个颜色
+                        var colorList = ['#c23531','#2f4554', '#61a0a8', '#d48265', '#91c7ae','#749f83', '#ca8622'];
+                        return colorList[params.dataIndex]
+                    }
+                }
+            }
+        }]
+    };
+
+    xdata=[];
+    ydata=[];
+    for(let i=0;i<data.length;i++){
+        xdata.push(data[i].date);
+        ydata.push(data[i].score);
+    }
+
+    option.xAxis.data=xdata;
+    option.series[0].data=ydata;
+    chart.setOption(option);
+
+}
+</script>
+</html>

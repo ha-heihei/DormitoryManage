@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lh.dao.StudentMapper">
+    <!--    用户登录-->
+    <select id="getStudentPageList" parameterType="int" resultType="com.lh.pojo.Student">
+        select * from student order by stunumber desc limit #{param1},#{param2}
+    </select>
+
+    <select id="getStudentCount" resultType="int">
+        select count(*) from student
+    </select>
+
+    <sql id="getStudentListCondition">
+        <where>
+            <if test="name!=null&amp;&amp;name.trim().length()>0">
+                and name like concat("%",#{name},"%")
+            </if>
+            <if test="stunumber!=null&amp;&amp;stunumber.trim().length()>0">
+                and stunumber=#{stunumber}
+            </if>
+            <if test="instructor!=null&amp;&amp;instructor.trim().length()>0">
+                and instructor_id like concat("%",#{instructor},"%")
+            </if>
+        </where>
+    </sql>
+
+
+    <select id="getStudentListByAll" parameterType="map" resultType="com.lh.pojo.Student">
+        select * from student
+        <include refid="getStudentListCondition"/>
+        order by stunumber desc limit #{start},#{end}
+    </select>
+
+    <select id="getStudentListByAllCount" parameterType="map" resultType="int">
+        select count(*) from student
+        <include refid="getStudentListCondition"/>
+
+    </select>
+
+
+    <select id="getStudentInfo" resultType="com.lh.pojo.Student" parameterType="string">
+        select * from student where stunumber=#{id}
+    </select>
+
+    <update id="updateStudent" parameterType="map">
+        update student set dormitory_id=#{id} where stunumber=#{stunumber}
+    </update>
+</mapper>

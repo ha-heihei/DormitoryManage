@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/tx
+        https://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+    <!--    扫描services-->
+    <context:component-scan base-package="com.lh.services"/>
+
+    <!--    注入services所有类-->
+    <bean class="com.lh.services.impl.UserServicesImpl" id="userServices">
+        <property name="userMapper" ref="userMapper"/>
+    </bean>
+
+    <bean class="com.lh.services.impl.ScoreServicesImpl" id="scoreServices">
+        <property name="scoreMapper" ref="scoreMapper"/>
+    </bean>
+
+    <bean class="com.lh.services.impl.StudentServicesImpl" id="studentServices">
+        <property name="studentMapper" ref="studentMapper"/>
+    </bean>
+
+    <bean class="com.lh.services.impl.OfficeServicesImpl" id="officeServices">
+        <property name="scoreMapper" ref="scoreMapper"/>
+    </bean>
+
+    <bean class="com.lh.services.impl.QNServicesImpl" id="qnServices">
+        <property name="qnMapper" ref="QNMapper"/>
+    </bean>
+
+
+    <!--    服务层应该有事务管理-->
+    <bean  class="org.springframework.jdbc.datasource.DataSourceTransactionManager"  id="transactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--AOP织入事务管理器-->
+    <tx:advice transaction-manager="transactionManager"  id="txTransactionManager">
+        <tx:attributes>
+            <tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <aop:config>
+        <aop:pointcut id="pointcut" expression="execution(* com.lh.services.*.*(..))"/>
+        <aop:advisor advice-ref="txTransactionManager" pointcut-ref="pointcut"/>
+    </aop:config>
+
+
+
+</beans>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert title here</title>
+    <meta name="description" content="particles.js is a lightweight JavaScript library for creating particles.">
+    <meta name="author" content="Vincent Garreau"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" type="text/css" href="../../../res/layui/css/layui.css"/>
+    <script src="../../../res/js/jquery.js"></script>
+    <script src="../../../res/js/cookie.js"></script>
+    <link rel="stylesheet" href="../../../res/layuiadmin/style/admin.css" media="all">
+</head>
+<body>
+<div class="layui-card">
+    <div class="layui-card-header layuiadmin-card-header-auto">
+        <form onsubmit="return false" class="layui-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">查宿日期</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="date" autocomplete="off" class="layui-input" id="date">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <div class="layui-btn-container">
+                        <button class="layui-btn layui-btn-normal layui-btn-sm" id="query">查询</button>
+                        <button class="layui-btn layui-btn-warm layui-btn-sm" id="xls">导出Excel</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="layui-card-body">
+        <table class="layui-table" lay-size="sm">
+            <thead>
+            <tr>
+                <td>序号</td>
+                <td>宿舍号</td>
+                <td>查宿日期</td>
+                <td>分数</td>
+                <td>学院</td>
+                <td>查宿人员</td>
+                <td>备注</td>
+                <td>操作</td>
+            </tr>
+            </thead>
+            <tbody id="body"></tbody>
+        </table>
+        <div style="margin: 8px auto;text-align: center">
+            <div id="page" style="background: #fff"></div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../../../res/layui/layui.all.js"></script>
+<script type="text/javascript">
+
+$(function () {
+    $.post(
+        '/getScoreList'
+        , {"start": 0, "end": 1,"id":getCookie("userid"),"date":$("input[name=date]").val()}
+        , function (o) {
+            layui.laypage.render({
+                elem: 'page'
+                , count: JSON.parse(o).num
+                , layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip']
+                , jump: function (obj) {
+                    getScoreList(obj.curr, obj.limit)
+                }
+            });
+        }
+    );
+    layui.laydate.render({
+        elem: '#date'
+    });
+    $('#query').click(function () {
+        getScoreList(1,10);
+    });
+
+    $("#xls").click(function () {
+        // a=document.createElement("a");
+        // a.href='/downLoadExcel?studentcardsid='+getCookie("userid")+"&date="+$('input[name=date]').val();
+        // alert(a.href)
+        // a.click()
+        DownLoadFile({
+            url:'/downLoadExcel'
+            ,data:{studentcardsid:getCookie("userid"),date:$('input[name=date]').val()}
+        })
+    })
+});
+
+function getScoreList(p, l) {
+    $.post(
+        '/getScoreList'
+        , {"start": (p - 1) * l, "end": l,"id":getCookie("userid"),"date":$("input[name=date]").val()}
+        , function (o) {
+            showList(o, p, l)
+        }
+    )
+}
+
+function showList(o, p, l) {
+    $('#body').html("");
+    let json = JSON.parse(JSON.parse(o).data);
+    let size = json.length;
+    for (let i = 0; i < size; i++) {
+        $("#body").append("<tr></tr>")
+    }
+    $("#body tr").each(function (i) {
+        $(this).append("<td>" + ((p - 1) * l + i + 1) + "</td>");
+        $(this).append("<td>" + json[i].score.dormitory_id + "</td>");
+        $(this).append("<td>" + json[i].score.date + "</td>");
+        $(this).append("<td>" + json[i].score.score + "</td>");
+        $(this).append("<td>" + json[i].academy + "</td>");
+        $(this).append("<td>" + json[i].user.name + "</td>");
+        $(this).append("<td>" + json[i].score.remark + "</td>");
+        $(this).append("<td><button class='layui-btn layui-btn-sm layui-btn-warm edit'>" +
+            "<i class='layui-icon layui-icon-edit'/>编辑</button></td>");
+    });
+
+    $("#body button.edit").each(function (i) {
+        $(this).click(function () {
+            layui.layer.open({
+                title: "修改分数"
+                , content: "<input type='text' class='layui-input' name='score'/><br/>" +
+                    "<input type='text' class='layui-input' name='remark'/>"
+                , btn: ["修改", "取消"]
+                , btnAlign: 'c'
+                , success: function (layero, index) {
+                    $('input[name=score]').val(json[i].score.score);
+                    $('input[name=remark]').val(json[i].score.remark);
+                }
+                , yes: function (index, layero) {
+                    $.post(
+                        "/updateScore"
+                        , {'score': $('input[name=score]').val(), "date": json[i].score.date
+                            ,"dormitory_id":json[i].score.dormitory_id
+                            ,"remark":$('input[name=remark]').val()}
+                        , function (o) {
+                            o = JSON.parse(o);
+                            if (o.code === 0) {
+                                layer.close(index);
+                                getScoreList(1,10);
+                            }else if(o.code===1){
+                                layer.msg("修改失败")
+                            }
+                        }
+                    );
+                    return true;
+                }
+            })
+        })
+    })
+}
+function getNowFormatDate() {
+    var date = new Date();
+    var seperator1 = "-";
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    var strDate = date.getDate();
+    if (month >= 1 && month <= 9) {
+        month = "0" + month;
+    }
+    if (strDate >= 0 && strDate <= 9) {
+        strDate = "0" + strDate;
+    }
+    var currentdate = year + seperator1 + month + seperator1 + strDate;
+    return currentdate;
+}
+
+var DownLoadFile = function (options) {
+    var config = $.extend(true, { method: 'post' }, options);
+    var $iframe = $('<iframe id="down-file-iframe" />');
+    var $form = $('<form target="down-file-iframe" method="' + config.method + '" />');
+    $form.attr('action', config.url);
+    for (var key in config.data) {
+        $form.append('<input type="hidden" name="' + key + '" value="' + config.data[key] + '" />');
+    }
+    $iframe.append($form);
+    $(document.body).append($iframe);
+    $form[0].submit();
+    console.log($form.serialize())
+    $iframe.remove();
+}
+</script>
+</html>

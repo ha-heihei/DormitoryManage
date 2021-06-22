@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lh.dao.QNMapper">
+
+    <resultMap id="map" type="map"/>
+
+    <insert id="insertQN" parameterType="map" >
+        insert into questionnaire values(#{stunumber},#{date},#{cla},#{name},#{sex},#{zao_wen},#{zhong_wen})
+    </insert>
+    
+    <select id="queryQN" parameterType="map" resultMap="map">
+        select * from questionnaire qn
+        <where>
+            <if test='abnormal!=null and abnormal=="1"'>
+                and (zao_wen>37 or zhong_wen>37)
+            </if>
+            <if test='abnormal!=null and abnormal=="0"'>
+                and (zao_wen&lt;=37 and zhong_wen&lt;=37)
+            </if>
+            <if test='sdate!=null and sdate!=""'>
+                and date>=#{sdate}
+            </if>
+            <if test='edate!=null and edate!=""'>
+                and date &lt;= #{edate}
+            </if>
+        </where>
+        order by date desc limit #{start},#{end}
+    </select>
+
+    <select id="queryQNCount" parameterType="map" resultType="int">
+        select count(*) from questionnaire qn
+        <where>
+            <if test='abnormal!=null and abnormal=="1"'>
+                and (zao_wen>37 or zhong_wen>37)
+            </if>
+            <if test='abnormal!=null and abnormal=="0"'>
+                and (zao_wen&lt;=37 and zhong_wen&lt;=37)
+            </if>
+            <if test='sdate!=null and sdate!=""'>
+                and date>=#{sdate}
+            </if>
+            <if test='edate!=null and edate!=""'>
+                and date &lt;= #{edate}
+            </if>
+        </where>
+    </select>
+
+<!--    文件下载-->
+    <select id="downLoadQN" parameterType="map" resultMap="map">
+        select * from questionnaire
+        <where>
+            <if test='abnormal!=null and abnormal=="1"'>
+                and (zao_wen>37 or zhong_wen>37)
+            </if>
+            <if test='abnormal!=null and abnormal=="0"'>
+                and (zao_wen&lt;=37 and zhong_wen&lt;=37)
+            </if>
+            <if test='sdate!=null and sdate!=""'>
+                and date>=#{sdate}
+            </if>
+            <if test='edate!=null and edate!=""'>
+                and date &lt;= #{edate}
+            </if>
+        </where>
+    </select>
+    
+    
+</mapper>
